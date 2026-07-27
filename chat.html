@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Chat Support</title>
+
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: #f8f9fa; padding-bottom: 70px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 15px; }
+
+        /* Chat Layout Structure */
+        .chat-wrapper { display: flex; gap: 15px; height: 520px; background: #fff; border-radius: 8px; border: 1px solid #ddd; overflow: hidden; }
+        
+        /* Left: Order Threads List */
+        .threads-sidebar { width: 35%; border-right: 1px solid #eee; overflow-y: auto; background: #fafafa; }
+        .threads-header { padding: 12px 15px; font-weight: bold; font-size: 0.9rem; color: #495057; background: #f1f3f5; border-bottom: 1px solid #ddd; }
+        .thread-item { padding: 12px 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
+        .thread-item:hover { background: #e9ecef; }
+        .thread-item.active { background: #e7f5ff; border-left: 4px solid #007bff; }
+        .thread-title { font-weight: 600; font-size: 0.88rem; color: #333; margin-bottom: 3px; }
+        .thread-sub { font-size: 0.75rem; color: #666; }
+
+        /* Right: Active Chat Area */
+        .chat-area { width: 65%; display: flex; flex-direction: column; }
+        .chat-header { padding: 12px 15px; font-weight: bold; border-bottom: 1px solid #eee; font-size: 0.9rem; color: #333; background: #fff; }
+        .messages-list { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #fff; }
+
+        .msg-bubble { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 0.88rem; line-height: 1.4; word-wrap: break-word; }
+        .msg-left { align-self: flex-start; background: #e9ecef; color: #212529; }
+        .msg-right { align-self: flex-end; background: #007bff; color: #fff; }
+        .msg-sender { font-size: 0.7rem; margin-bottom: 3px; opacity: 0.85; font-weight: 600; }
+
+        .chat-input-form { display: flex; padding: 10px; border-top: 1px solid #ddd; gap: 8px; background: #fff; }
+        .chat-input-form input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem; }
+        .chat-input-form button { padding: 10px 16px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .chat-input-form button:disabled { background: #80bdff; cursor: not-allowed; }
+
+        .no-chat-selected { flex: 1; display: flex; align-items: center; justify-content: center; color: #888; font-size: 0.9rem; }
+
+        /* Mobile Adaptability */
+        @media (max-width: 600px) {
+            .chat-wrapper { flex-direction: column; height: 580px; }
+            .threads-sidebar { width: 100%; height: 160px; border-right: none; border-bottom: 1px solid #ddd; }
+            .chat-area { width: 100%; height: 420px; }
+        }
+
+        .footer-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #ddd; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
+        .footer-nav a { text-decoration: none; color: #666; font-size: 0.85rem; display: flex; flex-direction: column; align-items: center; gap: 3px; font-weight: 500; }
+        .footer-nav a.active { color: #007bff; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h3 style="margin-bottom: 12px; color: #333;">Order Support Chat</h3>
+
+        <div class="chat-wrapper">
+            <!-- Sidebar with Order Threads -->
+            <div class="threads-sidebar">
+                <div class="threads-header">Conversations</div>
+                <div id="threads-list">
+                    <p style="padding: 15px; font-size: 0.8rem; color: #777;">Loading threads...</p>
+                </div>
+            </div>
+
+            <!-- Active Conversation Area -->
+            <div class="chat-area">
+                <div class="chat-header" id="chat-header">Select a conversation</div>
+                
+                <div id="no-chat-view" class="no-chat-selected">
+                    Select an order thread from the left list to start messaging.
+                </div>
+
+                <div id="active-chat-view" style="display: none; flex-direction: column; height: 100%;">
+                    <div class="messages-list" id="messages-list"></div>
+
+                    <form class="chat-input-form" id="send-msg-form">
+                        <input type="text" id="msg-input" placeholder="Type your reply..." required autocomplete="off">
+                        <button type="submit" id="send-btn">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="admin-back-link" style="text-align: center; margin-top: 15px; display: none;">
+            <a href="admin.html" style="color: #007bff; text-decoration: none; font-weight: bold;">← Back to Admin Panel</a>
+        </div>
+    </div>
+
+    <!-- Navigation Footer shown for Customer view -->
+    <nav class="footer-nav" id="customer-nav">
+        <a href="index.html"><i class="fa-solid fa-house"></i>Home</a>
+        <a href="cart.html"><i class="fa-solid fa-cart-shopping"></i>Cart</a>
+        <a href="chat.html" class="active"><i class="fa-solid fa-message"></i>Chat</a>
+    </nav>
+
+    <script>
+        // Check Authentication
+        const userId = localStorage.getItem('user_id');
+        const userRole = localStorage.getItem('role');
+
+        if (!userId) {
+            window.location.href = 'login.html';
+        }
+
+        // Configure UI for Role
+        if (userRole === 'admin') {
+            document.getElementById('customer-nav').style.display = 'none';
+            document.getElementById('admin-back-link').style.display = 'block';
+        }
+
+        // Parse query params for default order selection
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentOrderId = parseInt(urlParams.get('order_id')) || 0;
+
+        // Initialize Supabase Client
+        const SUPABASE_URL = 'https://umkhoitnouazrfdpftld.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_EzmGw6JDJyehqfK1VNhZQg_21JYto78';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let realtimeChannel = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadOrderThreads();
+        });
+
+        // 1. Load Order Threads List
+        async function loadOrderThreads() {
+            const threadsListEl = document.getElementById('threads-list');
+
+            let query = _supabase
+                .from('orders')
+                .select(`
+                    id,
+                    products ( name ),
+                    users ( username )
+                `)
+                .order('id', { ascending: false });
+
+            // Customers only see their own orders; Admins see all
+            if (userRole !== 'admin') {
+                query = query.eq('customer_id', userId);
+            }
+
+            const { data: orders, error } = await query;
+
+            if (error || !orders || orders.length === 0) {
+                threadsListEl.innerHTML = '<p style="padding: 15px; font-size: 0.8rem; color: #777;">No active orders found.</p>';
+                return;
+            }
+
+            threadsListEl.innerHTML = '';
+            
+            orders.forEach(order => {
+                const productName = order.products ? order.products.name : 'Product';
+                const customerName = order.users ? order.users.username : 'Customer';
+                const isActive = order.id === currentOrderId;
+
+                const item = document.createElement('div');
+                item.className = `thread-item ${isActive ? 'active' : ''}`;
+                item.onclick = () => selectOrderThread(order.id, productName, customerName);
+                item.innerHTML = `
+                    <div class="thread-title">Order #${order.id}</div>
+                    <div class="thread-sub">${escapeHtml(productName)} ${userRole === 'admin' ? `(${escapeHtml(customerName)})` : ''}</div>
+                `;
+                threadsListEl.appendChild(item);
+            });
+
+            // If an order_id exists in URL or auto-select first thread if none specified
+            if (currentOrderId > 0) {
+                const targetOrder = orders.find(o => o.id === currentOrderId);
+                if (targetOrder) {
+                    selectOrderThread(
+                        targetOrder.id, 
+                        targetOrder.products ? targetOrder.products.name : 'Product',
+                        targetOrder.users ? targetOrder.users.username : 'Customer'
+                    );
+                }
+            }
+        }
+
+        // 2. Select Thread and Load Messages
+        async function selectOrderThread(orderId, productName, customerName) {
+            currentOrderId = orderId;
+
+            // Highlight active thread element in UI
+            document.querySelectorAll('.thread-item').forEach(el => el.classList.remove('active'));
+            event?.currentTarget?.classList.add('active');
+
+            // Toggle view visibility
+            document.getElementById('no-chat-view').style.display = 'none';
+            document.getElementById('active-chat-view').style.display = 'flex';
+            
+            document.getElementById('chat-header').innerText = `Order #${orderId} - ${productName} ${userRole === 'admin' ? `(${customerName})` : ''}`;
+
+            await fetchMessages(orderId);
+            subscribeToNewMessages(orderId);
+        }
+
+        // 3. Fetch Messages for Current Thread
+        async function fetchMessages(orderId) {
+            const listEl = document.getElementById('messages-list');
+            listEl.innerHTML = '<p style="text-align: center; font-size: 0.8rem; color: #999;">Loading messages...</p>';
+
+            const { data: messages, error } = await _supabase
+                .from('messages')
+                .select(`
+                    id,
+                    message,
+                    sender_id,
+                    created_at,
+                    users ( username, role )
+                `)
+                .eq('order_id', orderId)
+                .order('created_at', { ascending: true });
+
+            if (error) {
+                listEl.innerHTML = '<p style="text-align: center; color: red;">Failed to load messages.</p>';
+                return;
+            }
+
+            listEl.innerHTML = '';
+            messages.forEach(m => renderMessage(m));
+            scrollToBottom();
+        }
+
+        // Render individual message bubble
+        function renderMessage(m) {
+            const listEl = document.getElementById('messages-list');
+            const isMe = parseInt(m.sender_id) === parseInt(userId);
+            const senderName = m.users ? m.users.username : 'User';
+            const senderRole = m.users ? m.users.role : '';
+
+            const bubble = document.createElement('div');
+            bubble.className = `msg-bubble ${isMe ? 'msg-right' : 'msg-left'}`;
+            bubble.innerHTML = `
+                <div class="msg-sender">${escapeHtml(senderName)} (${escapeHtml(senderRole)})</div>
+                <div>${escapeHtml(m.message)}</div>
+            `;
+            listEl.appendChild(bubble);
+        }
+
+        // 4. Send Message Handler
+        document.getElementById('send-msg-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('msg-input');
+            const btn = document.getElementById('send-btn');
+            const text = input.value.trim();
+
+            if (!text || currentOrderId === 0) return;
+
+            btn.disabled = true;
+
+            const { error } = await _supabase
+                .from('messages')
+                .insert([{
+                    order_id: currentOrderId,
+                    sender_id: parseInt(userId),
+                    message: text
+                }]);
+
+            if (error) {
+                alert('Error sending message: ' + error.message);
+            } else {
+                input.value = '';
+            }
+
+            btn.disabled = false;
+        });
+
+        // 5. Supabase Realtime Listener for Live Chat updates
+        function subscribeToNewMessages(orderId) {
+            if (realtimeChannel) {
+                _supabase.removeChannel(realtimeChannel);
+            }
+
+            realtimeChannel = _supabase
+                .channel(`public:messages:order_${orderId}`)
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `order_id=eq.${orderId}`
+                }, async (payload) => {
+                    // Fetch full details of the newly inserted message (to include user username/role)
+                    const { data: newMsg } = await _supabase
+                        .from('messages')
+                        .select('id, message, sender_id, created_at, users(username, role)')
+                        .eq('id', payload.new.id)
+                        .single();
+
+                    if (newMsg) {
+                        renderMessage(newMsg);
+                        scrollToBottom();
+                    }
+                })
+                .subscribe();
+        }
+
+        function scrollToBottom() {
+            const listEl = document.getElementById('messages-list');
+            listEl.scrollTop = listEl.scrollHeight;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+            });
+        }
+    </script>
+</body>
+</html>

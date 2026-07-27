@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>My Cart & Orders</title>
+
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: #f8f9fa; padding-bottom: 70px; }
+        .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
+        h2 { margin-bottom: 15px; color: #111; }
+        .order-card { background: #fff; border-radius: 8px; border: 1px solid #eee; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 15px; }
+        .order-card img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; }
+        .order-details { flex: 1; }
+        .order-title { font-weight: 600; color: #333; margin-bottom: 4px; }
+        .order-meta { font-size: 0.85rem; color: #666; }
+        .btn-chat { text-decoration: none; background: #007bff; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; }
+        
+        /* Fixed Footer Navigation */
+        .footer-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #ddd; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
+        .footer-nav a { text-decoration: none; color: #666; font-size: 0.85rem; display: flex; flex-direction: column; align-items: center; gap: 3px; font-weight: 500; }
+        .footer-nav a.active { color: #007bff; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>My Purchases & Cart</h2>
+        <div id="orders-container">
+            <p style="color: #666;">Loading your purchases...</p>
+        </div>
+    </div>
+
+    <!-- Fixed Footer Navigation -->
+    <nav class="footer-nav">
+        <a href="index.html"><i class="fa-solid fa-house"></i>Home</a>
+        <a href="cart.html" class="active"><i class="fa-solid fa-cart-shopping"></i>Cart</a>
+        <a href="chat.html"><i class="fa-solid fa-message"></i>Chat</a>
+    </nav>
+
+    <script>
+        // Check Customer Session Guard
+        const customerId = localStorage.getItem('user_id');
+        if (!customerId) {
+            window.location.href = 'login.html';
+        }
+
+        // Initialize Supabase
+        const SUPABASE_URL = 'https://umkhoitnouazrfdpftld.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_EzmGw6JDJyehqfK1VNhZQg_21JYto78';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.addEventListener('DOMContentLoaded', loadCustomerOrders);
+
+        async function loadCustomerOrders() {
+            const container = document.getElementById('orders-container');
+
+            // Fetch orders for this customer along with product details
+            const { data: orders, error } = await _supabase
+                .from('orders')
+                .select(`
+                    id,
+                    status,
+                    created_at,
+                    products (
+                        name,
+                        price,
+                        image_url
+                    )
+                `)
+                .eq('customer_id', customerId)
+                .order('id', { ascending: false });
+
+            if (error) {
+                console.error("Error loading orders:", error);
+                container.innerHTML = '<p style="color: red;">Failed to load your orders. Please try again.</p>';
+                return;
+            }
+
+            if (!orders || orders.length === 0) {
+                container.innerHTML = '<p style="color: #666;">You haven\'t placed any orders yet.</p>';
+                return;
+            }
+
+            container.innerHTML = ''; // Clear loading text
+
+            orders.forEach(order => {
+                const product = order.products || {};
+                const name = product.name || 'Unknown Product';
+                const price = parseFloat(product.price || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+                const imageUrl = product.image_url || 'https://via.placeholder.com/150';
+
+                const cardHtml = `
+                    <div class="order-card">
+                        <img src="${escapeHtml(imageUrl)}" alt="Product">
+                        <div class="order-details">
+                            <div class="order-title">${escapeHtml(name)}</div>
+                            <div class="order-meta">₦${price} | Status: <strong>${escapeHtml(order.status || 'Pending')}</strong></div>
+                        </div>
+                        <a href="chat.html?order_id=${order.id}" class="btn-chat">Open Chat</a>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+    </script>
+</body>
+</html>

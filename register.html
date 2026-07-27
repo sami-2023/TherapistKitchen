@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Therapist Kitchen</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: #f4f6f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .auth-card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 100%; max-width: 400px; }
+        h2 { margin-bottom: 20px; color: #111; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #555; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
+        button { width: 100%; padding: 12px; background: #007bff; color: #fff; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #a0c7ff; cursor: not-allowed; }
+        .msg { padding: 10px; border-radius: 6px; margin-bottom: 15px; text-align: center; font-size: 0.9rem; display: none; }
+        .error { background: #ffe6e6; color: #d93025; }
+        .success { background: #e6ffe6; color: #1e7e34; }
+        .footer-link { text-align: center; margin-top: 15px; font-size: 0.9rem; }
+        .footer-link a { color: #007bff; text-decoration: none; }
+    </style>
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="auth-card">
+        <h2>Create Account</h2>
+        
+        <!-- Status Messages -->
+        <div id="error-msg" class="msg error"></div>
+        <div id="success-msg" class="msg success"></div>
+        
+        <form id="register-form">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required>
+            </div>
+            
+            <button type="submit" id="submit-btn">Sign Up</button>
+        </form>
+        
+        <div class="footer-link">
+            Already have an account? <a href="login.html">Login here</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // Initialize Supabase Client
+    const SUPABASE_URL = 'https://umkhoitnouazrfdpftld.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_EzmGw6JDJyehqfK1VNhZQg_21JYto78';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById('register-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const errorMsg = document.getElementById('error-msg');
+    const successMsg = document.getElementById('success-msg');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Clear past messages & set loading state
+        if (errorMsg) errorMsg.style.display = 'none';
+        if (successMsg) successMsg.style.display = 'none';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Creating account...';
+        }
+
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        // Save new customer directly to your 'users' table
+        const { data: newUser, error: dbError } = await _supabase
+            .from('users')
+            .insert([
+                { 
+                    username: username, 
+                    email: email, 
+                    password: password,
+                    role: 'customer' // Automatically set as customer
+                }
+            ])
+            .select()
+            .single();
+
+        if (dbError) {
+            showError(dbError.message);
+        } else {
+            // Save customer session state automatically
+            localStorage.setItem('user_id', newUser.id);
+            localStorage.setItem('role', 'customer');
+
+            showSuccess("Account created successfully! Redirecting...");
+            form.reset();
+
+            // Redirect customer to store home page after 1.5 seconds
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        }
+    });
+
+    function showError(msg) {
+        if (errorMsg) {
+            errorMsg.innerHTML = msg;
+            errorMsg.style.display = 'block';
+        } else {
+            alert(msg);
+        }
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Sign Up';
+        }
+    }
+
+    function showSuccess(msg) {
+        if (successMsg) {
+            successMsg.innerHTML = msg;
+            successMsg.style.display = 'block';
+        } else {
+            alert(msg);
+        }
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Sign Up';
+        }
+    }
+</script>
+</body>
+</html>
