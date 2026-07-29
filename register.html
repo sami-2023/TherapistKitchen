@@ -7,7 +7,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
         body { background: #f4f6f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .auth-card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 100%; max-width: 400px; }
+        .auth-card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.822); width: 100%; max-width: 400px; }
         h2 { margin-bottom: 20px; color: #111; text-align: center; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #555; }
@@ -20,6 +20,13 @@
         .success { background: #e6ffe6; color: #1e7e34; }
         .footer-link { text-align: center; margin-top: 15px; font-size: 0.9rem; }
         .footer-link a { color: #007bff; text-decoration: none; }
+         .logo{
+            width: 100px;
+            height: 100px;
+            border-radius: 30%;
+            margin-bottom: 20px;
+            margin-left: 35%;
+        }
     </style>
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -27,7 +34,7 @@
 <body>
     <div class="auth-card">
         <h2>Create Account</h2>
-        
+        <img src="therapist.jpg" alt="logo" class="logo">
         <!-- Status Messages -->
         <div id="error-msg" class="msg error"></div>
         <div id="success-msg" class="msg success"></div>
