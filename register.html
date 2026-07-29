@@ -5,28 +5,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Therapist Kitchen</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-        body { background: #f4f6f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .auth-card { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.822); width: 100%; max-width: 400px; }
-        h2 { margin-bottom: 20px; color: #111; text-align: center; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #555; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; }
-        button { width: 100%; padding: 12px; background: #007bff; color: #fff; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        button:hover { background: #0056b3; }
-        button:disabled { background: #a0c7ff; cursor: not-allowed; }
-        .msg { padding: 10px; border-radius: 6px; margin-bottom: 15px; text-align: center; font-size: 0.9rem; display: none; }
-        .error { background: #ffe6e6; color: #d93025; }
-        .success { background: #e6ffe6; color: #1e7e34; }
-        .footer-link { text-align: center; margin-top: 15px; font-size: 0.9rem; }
-        .footer-link a { color: #007bff; text-decoration: none; }
-         .logo{
-            width: 100px;
-            height: 100px;
-            border-radius: 30%;
-            margin-bottom: 20px;
-            margin-left: 35%;
-        }
+       @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #fffaf0 0%, #f3e9dc 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.auth-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 40px 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(184, 115, 51, 0.12), 0 1px 3px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 420px;
+    border: 1px solid rgba(230, 215, 200, 0.6);
+}
+
+.logo {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    margin: 0 auto 20px auto;
+    display: block;
+    object-fit: cover;
+    box-shadow: 0 6px 16px rgba(224, 86, 36, 0.2);
+    border: 3px solid #e05624;
+}
+
+h2 {
+    margin-bottom: 24px;
+    color: #2c1810;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.75rem;
+    letter-spacing: -0.5px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #5c4a3e;
+}
+
+input, select {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid #e2d7cd;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    background: #fff;
+    color: #2c1810;
+    transition: all 0.25s ease;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #e05624;
+    box-shadow: 0 0 0 4px rgba(224, 86, 36, 0.12);
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #e05624 0%, #c84313 100%);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 4px 12px rgba(224, 86, 36, 0.3);
+    transition: all 0.25s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(224, 86, 36, 0.4);
+}
+
+button:disabled {
+    background: #e0a38f;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.msg {
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    text-align: center;
+    font-size: 0.88rem;
+    font-weight: 500;
+    display: none;
+}
+
+.error {
+    background: #fdf2f2;
+    color: #d93025;
+    border: 1px solid #f8d7da;
+}
+
+.success {
+    background: #edf7ed;
+    color: #1e7e34;
+    border: 1px solid #c3e6cb;
+}
+
+.footer-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #6c5a4c;
+}
+
+.footer-link a {
+    color: #e05624;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.footer-link a:hover {
+    text-decoration: underline;
+}
     </style>
     <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
