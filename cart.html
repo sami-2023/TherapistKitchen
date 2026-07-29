@@ -10,21 +10,128 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-        body { background: #f8f9fa; padding-bottom: 70px; }
-        .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
-        h2 { margin-bottom: 15px; color: #111; }
-        .order-card { background: #fff; border-radius: 8px; border: 1px solid #eee; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 15px; }
-        .order-card img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; }
-        .order-details { flex: 1; }
-        .order-title { font-weight: 600; color: #333; margin-bottom: 4px; }
-        .order-meta { font-size: 0.85rem; color: #666; }
-        .btn-chat { text-decoration: none; background: #007bff; color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; }
-        
-        /* Fixed Footer Navigation */
-        .footer-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #ddd; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
-        .footer-nav a { text-decoration: none; color: #666; font-size: 0.85rem; display: flex; flex-direction: column; align-items: center; gap: 3px; font-weight: 500; }
-        .footer-nav a.active { color: #007bff; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background: #f1f5f9;
+    padding-bottom: 85px;
+}
+
+.container {
+    max-width: 650px;
+    margin: 25px auto;
+    padding: 0 16px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.order-card {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    padding: 16px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.order-card img {
+    width: 68px;
+    height: 68px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+}
+
+.order-details {
+    flex: 1;
+}
+
+.order-title {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.order-meta {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.order-meta strong {
+    color: #2563eb;
+}
+
+.btn-chat {
+    text-decoration: none;
+    background: #eff6ff;
+    color: #2563eb;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid #bfdbfe;
+    transition: all 0.2s ease;
+}
+
+.btn-chat:hover {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.footer-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #0f172a;
+    border-top: 1px solid #1e293b;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+    z-index: 1000;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.footer-nav a {
+    text-decoration: none;
+    color: #94a3b8;
+    font-size: 0.82rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+}
+
+.footer-nav a i {
+    font-size: 1.2rem;
+}
+
+.footer-nav a.active {
+    color: #38bdf8;
+}
     </style>
 </head>
 <body>

@@ -1,0 +1,45 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <style>
+    .footer-nav { 
+            position: fixed; 
+            bottom: 70px; 
+            left: 0; 
+            width: 100%; 
+            background: #fff; 
+            border-top: 1px solid #ddd; 
+            display: flex; 
+            justify-content: space-around; 
+            padding: 10px 0; 
+            z-index: 1000; 
+        }
+        .footer-ad { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            background: #fff; 
+            border-top: 1px solid #ddd; 
+            display: flex; 
+            justify-content: space-around; 
+            
+            z-index: 1000; 
+        }
+  </style>
+  <!-- Fixed Footer Navigation -->
+    <nav class="footer-nav">
+        <a href="index.html" class="active"><i class="fa-solid fa-house"></i>Home</a>
+        <a href="cart.html"><i class="fa-solid fa-cart-shopping"></i>Cart</a>
+        <a href="chat.html"><i class="fa-solid fa-message"></i>Chat</a>
+    </nav>
+    <nav class="footer-ad">
+      <img src="ad.jpg" alt="">
+    </nav>
+
+</body>
+</html>
